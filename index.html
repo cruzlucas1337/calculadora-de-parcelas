@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Prestações - Sistema Price</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        input {
+            width: calc(100% - 10px);
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #resultado {
+            margin-top: 15px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculadora de Prestações</h1>
+        <input type="number" id="valor" placeholder="Valor do Financiamento" required>
+        <input type="number" id="juros" placeholder="Taxa de Juros (%)" required>
+        <input type="number" id="parcelas" placeholder="Número de Parcelas" required>
+        <button onclick="calcularPrestacao()">Calcular Prestação</button>
+        <p id="resultado"></p>
+        
+        <table id="tabela-amortizacao" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Parcela</th>
+                    <th>Prestação</th>
+                    <th>Juros</th>
+                    <th>Amortização</th>
+                    <th>Saldo Devedor</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        function calcularPrestacao() {
+            const valor = parseFloat(document.getElementById('valor').value);
+            const juros = parseFloat(document.getElementById('juros').value) / 100 / 12; // Juros mensais
+            const parcelas = parseInt(document.getElementById('parcelas').value);
+            const resultado = document.getElementById('resultado');
+            const tabelaAmortizacao = document.getElementById('tabela-amortizacao');
+            const tbody = tabelaAmortizacao.querySelector('tbody');
+            tbody.innerHTML = ''; // Limpa a tabela antes de adicionar novas linhas
+
+            if (isNaN(valor) || isNaN(juros) || isNaN(parcelas) || valor <= 0 || juros < 0 || parcelas <= 0) {
+                resultado.innerText = "Por favor, insira valores válidos.";
+                return;
+            }
+
+            // Fórmula da prestação no Sistema Price
+            const prestacao = (valor * juros) / (1 - Math.pow(1 + juros, -parcelas));
+            resultado.innerText = `Prestação Mensal: R$ ${prestacao.toFixed(2)}`;
+
+            // Cálculo da tabela de amortização
+            let saldoDevedor = valor;
+
+            for (let i = 1; i <= parcelas; i++) {
+                const jurosPago = saldoDevedor * juros;
+                const amortizacao = prestacao - jurosPago;
+                saldoDevedor -= amortizacao;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${i}</td>
+                    <td>R$ ${prestacao.toFixed(2)}</td>
+                    <td>R$ ${jurosPago.toFixed(2)}</td>
+                    <td>R$ ${amortizacao.toFixed(2)}</td>
+                    <td>R$ ${Math.max(saldoDevedor, 0).toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+            tabelaAmortizacao.style.display = 'table';
+        }
+    </script>
+</body>
+</html>
